@@ -1,0 +1,227 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Series 65 — Demo Quiz App — FirstSit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+:root{--cream:#FAF7F0;--ink:#14181F;--green:#16B364;--green-d:#0E7A46;--green-bg:#EAF7F0;--green-bd:#CDEBD9;
+--slate:#3E5C76;--terra:#C2703D;--terra-bg:#FBEFE6;--terra-bd:#E6CBB4;--muted:#5B6470;--line:#E7E0D4;--card:#fff;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.5;}
+.wrap{max-width:760px;margin:0 auto;padding:20px 18px 64px;}
+.kick{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:2px;color:#7C715A;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:27px;margin:2px 0 2px;}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--muted);}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px;}
+.stat{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green-d);background:var(--green-bg);
+border:1px solid var(--green-bd);border-radius:20px;padding:4px 12px;}
+.stat.leech{color:var(--terra);background:var(--terra-bg);border-color:var(--terra-bd);}
+.stat.muted{color:var(--muted);background:#F2EFE8;border-color:var(--line);}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 4px;}
+select,.btn{font-family:'Inter',sans-serif;font-size:13px;border:1px solid var(--line);background:var(--card);
+color:var(--ink);border-radius:9px;padding:7px 11px;cursor:pointer;}
+.btn:hover{border-color:var(--slate);}
+.btn.ghost{background:transparent;color:var(--muted);}
+.progress{height:7px;background:#ECE5D7;border-radius:6px;overflow:hidden;margin:10px 0 4px;}
+.progress > i{display:block;height:100%;background:var(--green);width:0;transition:width .3s;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;margin:14px 0;
+box-shadow:0 1px 0 rgba(20,24,31,.03);}
+.qmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7C715A;margin-bottom:7px;display:flex;gap:10px;flex-wrap:wrap;}
+.qmeta .leechmark{color:var(--terra);}
+.stem{font-size:16px;font-weight:500;margin:2px 0 14px;}
+.choice{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);
+background:var(--cream);border-radius:10px;padding:11px 13px;margin:8px 0;font-size:14px;cursor:pointer;transition:.12s;}
+.choice:hover:not(:disabled){border-color:var(--slate);background:#fff;}
+.choice:disabled{cursor:default;}
+.choice .cl{font-family:'IBM Plex Mono',monospace;color:var(--slate);font-weight:500;}
+.choice.correct{border-color:var(--green);background:var(--green-bg);}
+.choice.wrong{border-color:var(--terra);background:var(--terra-bg);}
+.choice .mk{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.choice.correct .mk{color:var(--green-d);} .choice.wrong .mk{color:var(--terra);}
+.exps{margin:10px 0 2px;display:none;}
+.exps.show{display:block;}
+.exp{font-size:13px;color:#3a4047;border-top:1px dashed var(--line);padding:8px 0 0;margin-top:8px;}
+.exp .ok{color:var(--green-d);font-family:'IBM Plex Mono',monospace;}
+.exp .no{color:#9a8e78;font-family:'IBM Plex Mono',monospace;}
+.exp b{font-family:'IBM Plex Mono',monospace;}
+.next{display:none;margin-top:14px;}
+.next.show{display:inline-block;}
+.next .btn{background:var(--ink);color:var(--cream);border-color:var(--ink);font-weight:600;padding:9px 18px;}
+.feedline{font-family:'IBM Plex Mono',monospace;font-size:12px;margin:10px 0 0;display:none;}
+.feedline.show{display:block;} .feedline.good{color:var(--green-d);} .feedline.bad{color:var(--terra);}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;}
+.foot{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#A99C84;text-align:center;margin-top:26px;line-height:1.6;}
+.disc{font-size:10px;color:#A99C84;border-top:1px solid var(--line);padding-top:10px;margin-top:18px;line-height:1.5;}
+</style></head><body><div class="wrap">
+
+<div class="kick">FirstSit</div>
+<h1>Series 65 — Demo Quiz App</h1>
+<div class="tag">Pass on your first sitting · 15 questions · your progress stays on this device</div>
+
+<div class="bar">
+  <span class="stat" id="s-mastered">Mastered 0/15</span>
+  <span class="stat leech" id="s-leech">Leech pile 0</span>
+  <span class="stat muted" id="s-acc">Accuracy —</span>
+</div>
+<div class="progress"><i id="prog"></i></div>
+
+<div class="controls">
+  <select id="mode" title="Question order">
+    <option value="smart">Smart (leech-weighted)</option>
+    <option value="sequential">Sequential</option>
+    <option value="leech">Drill leeches only</option>
+  </select>
+  <select id="unit" title="Filter by unit"><option value="all">All units</option></select>
+  <button class="btn ghost" id="reset" title="Erase saved progress on this device">Reset progress</button>
+</div>
+
+<noscript>
+  <div class="card" style="border-color:var(--terra);background:var(--terra-bg)">
+    <b>This quiz runs on JavaScript — and it looks like scripts are turned off here.</b><br><br>
+    If you're seeing this in a file <i>preview</i> (inside a chat, email, or cloud viewer), that preview
+    is blocking the quiz. <b>Download this file and open it in a web browser</b> — Safari, Chrome, Edge,
+    or Firefox — and the questions will appear. Everything works offline and your progress saves on your
+    own device. Nothing is uploaded.
+  </div>
+</noscript>
+
+<div id="stage"><div class="card empty">Loading questions…<br><span style="font-size:12px">If this message stays, open the file in a web browser (not a preview).</span></div></div>
+
+<div class="disc">Independent study aid. Not affiliated with, sponsored by, or endorsed by FINRA, NASAA, Kaplan, or Prometric. All questions are original. Verify current exam specifics at finra.org / nasaa.org.</div>
+<div class="foot">FirstSit · Pass on your first sitting · offline quiz app v1<br>Your answers and progress are saved only in this browser (localStorage). Nothing is uploaded.</div>
+</div>
+
+<script>
+"use strict";
+const EXAM = "Series 65 — Demo";
+const QUESTIONS = [{"id": "q0", "unit": 1, "unitTitle": "Equity Securities", "difficulty": "medium", "stem": "An investor owns 500 shares of common stock in a company that uses a cumulative voting structure and is electing four directors at the annual meeting. How many votes may the investor cast for a single candidate?", "choices": [{"label": "A", "text": "500 votes", "correct": false, "explanation": "Incorrect; 500 reflects statutory (regular) voting, where votes are allocated separately seat by seat, not the pooled total available under cumulative voting."}, {"label": "B", "text": "2,000 votes", "correct": true, "explanation": "Correct; under cumulative voting the shareholder gets shares times seats (500 x 4 = 2,000) and may cast all of them for one candidate."}, {"label": "C", "text": "125 votes", "correct": false, "explanation": "Incorrect; this divides shares by seats (500 / 4), which has no basis in either voting method and drastically understates the votes available."}, {"label": "D", "text": "1,000 votes", "correct": false, "explanation": "Incorrect; this multiplies shares by 2 (one vote per share for, plus one against, or a similar mis-count of seats), a common error that ignores the full four-seat multiplier."}]}, {"id": "q1", "unit": 2, "unitTitle": "Bonds as Fixed-Income Securities", "difficulty": "easy", "stem": "Market interest rates rise sharply over the next quarter. All else equal, what generally happens to the market price of an outstanding fixed-rate bond?", "choices": [{"label": "A", "text": "Its price falls, because bond prices and interest rates move in opposite directions.", "correct": true, "explanation": "Correct; the inverse price/yield relationship means an existing bond's fixed coupon becomes less attractive when new bonds pay more, so its price drops."}, {"label": "B", "text": "Its price rises, because higher rates make the bond more valuable.", "correct": false, "explanation": "Incorrect; this reverses the relationship — rising rates make an existing lower-coupon bond worth less, not more."}, {"label": "C", "text": "Its price stays the same, because the coupon is fixed for the life of the bond.", "correct": false, "explanation": "Incorrect; the coupon is fixed, but the market price floats to keep the bond's yield competitive with prevailing rates."}, {"label": "D", "text": "Its price falls only if the issuer's credit rating is also downgraded.", "correct": false, "explanation": "Incorrect; a rate-driven price decline (interest-rate risk) happens independently of any change in credit quality."}]}, {"id": "q2", "unit": 3, "unitTitle": "Pooled Investments", "difficulty": "easy", "stem": "A client places an order to buy shares of an open-end mutual fund at 2:30 p.m. ET on a business day. At what price will the order be executed?", "choices": [{"label": "A", "text": "The NAV that was last published at the close of the prior business day", "correct": false, "explanation": "Incorrect; forward pricing forbids filling at a stale, previously calculated NAV."}, {"label": "B", "text": "The next NAV calculated after the order is received, which will be today's closing NAV", "correct": true, "explanation": "Correct; under forward pricing an order received before the 4:00 p.m. ET close fills at the next computed NAV, which is that same day's close."}, {"label": "C", "text": "The NAV calculated as of 2:30 p.m. ET, the moment the order was entered", "correct": false, "explanation": "Incorrect; funds do not strike an intraday NAV at the order time, they price once daily after the close."}, {"label": "D", "text": "The next business day's closing NAV, because the order was placed in the afternoon", "correct": false, "explanation": "Incorrect; only orders received after the 4:00 p.m. close get the next day's price, and 2:30 p.m. is before the close."}]}, {"id": "q3", "unit": 4, "unitTitle": "Types and Characteristics of Derivative Investments", "difficulty": "easy", "stem": "An investor buys one call option on a stock. Which statement best describes the rights and obligations created by this contract?", "choices": [{"label": "A", "text": "The buyer has the right, but not the obligation, to purchase the underlying stock at the strike price.", "correct": true, "explanation": "Correct; a call buyer holds the right to buy the underlying at the strike, with no obligation to exercise."}, {"label": "B", "text": "The buyer is obligated to purchase the underlying stock at the strike price before expiration.", "correct": false, "explanation": "Incorrect; option buyers have rights, not obligations, so the buyer is never forced to buy."}, {"label": "C", "text": "The buyer has the right to sell the underlying stock at the strike price.", "correct": false, "explanation": "Incorrect; the right to sell at the strike belongs to a put buyer, not a call buyer."}, {"label": "D", "text": "The buyer is obligated to deliver the underlying stock if assigned.", "correct": false, "explanation": "Incorrect; the obligation to deliver belongs to a call writer who is assigned, not to the buyer."}]}, {"id": "q4", "unit": 5, "unitTitle": "Alternative Investments and Other Assets", "difficulty": "medium", "stem": "An investor in a real estate limited partnership receives a Schedule K-1 reporting a $12,000 loss for the year. The investor has no other passive activities. For tax purposes, how may the investor generally use this loss?", "choices": [{"label": "A", "text": "It may be deducted only against passive income; with none this year, it is carried forward", "correct": true, "explanation": "Correct; DPP losses are passive and can offset only passive income, so an unused passive loss is suspended and carried forward to future years."}, {"label": "B", "text": "It may be deducted in full against the investor's salary and wages this year", "correct": false, "explanation": "Incorrect; passive losses cannot offset active income such as wages or salary."}, {"label": "C", "text": "It may be deducted against portfolio income such as interest and dividends", "correct": false, "explanation": "Incorrect; passive losses cannot be netted against portfolio (investment) income either, only against passive income."}, {"label": "D", "text": "It is permanently disallowed because limited partners cannot deduct losses", "correct": false, "explanation": "Incorrect; flow-through of losses is a key DPP feature, the loss is usable against passive income, not permanently lost."}]}, {"id": "q5", "unit": 6, "unitTitle": "Basic Economic Concepts", "difficulty": "easy", "stem": "The four phases of the business cycle, in their normal sequence, are best described as:", "choices": [{"label": "A", "text": "Expansion, peak, contraction, trough", "correct": true, "explanation": "Correct; the economy grows (expansion) to a high point (peak), then declines (contraction) to a low point (trough) before recovering."}, {"label": "B", "text": "Peak, expansion, trough, contraction", "correct": false, "explanation": "Incorrect; this jumbles the order, placing the peak before the expansion that produces it."}, {"label": "C", "text": "Inflation, recession, depression, recovery", "correct": false, "explanation": "Incorrect; these are economic conditions or outcomes, not the formal four phases of the business cycle."}, {"label": "D", "text": "Trough, contraction, peak, expansion", "correct": false, "explanation": "Incorrect; a contraction moves toward a trough, not away from one, so this sequence is backwards."}]}, {"id": "q6", "unit": 7, "unitTitle": "Financial Reporting", "difficulty": "easy", "stem": "An analyst wants to know a company's financial position on a single, specific date — exactly what it owns and what it owes at that moment. Which financial statement should the analyst pull?", "choices": [{"label": "A", "text": "The balance sheet", "correct": true, "explanation": "Correct; the balance sheet is a snapshot of assets, liabilities, and owners' equity at one specific date."}, {"label": "B", "text": "The income statement", "correct": false, "explanation": "Incorrect; the income statement covers a span of time (a quarter or year), not a single date."}, {"label": "C", "text": "The statement of cash flows", "correct": false, "explanation": "Incorrect; the cash flow statement reports cash movement across a period, not position at one moment."}, {"label": "D", "text": "The footnotes to the financial statements", "correct": false, "explanation": "Incorrect; footnotes disclose details like inventory method and lawsuits, but they are not the snapshot of financial position itself."}]}, {"id": "q7", "unit": 8, "unitTitle": "Regulation of Securities and Their Issuers", "difficulty": "easy", "stem": "Under the Uniform Securities Act, which of the following is generally considered an exempt SECURITY rather than relying on an exempt transaction?", "choices": [{"label": "A", "text": "A U.S. government Treasury bond", "correct": true, "explanation": "Correct; securities issued or guaranteed by the U.S. government are expressly listed as exempt securities under the Act, so they need not register at the state level."}, {"label": "B", "text": "An unsolicited order from a customer to buy an unregistered stock", "correct": false, "explanation": "Incorrect; an unsolicited order is an exempt TRANSACTION, not an exempt security — the exemption attaches to the trade, not the instrument."}, {"label": "C", "text": "A private placement sold to ten or fewer non-institutional buyers in a year", "correct": false, "explanation": "Incorrect; a private placement is an exempt transaction defined by how the offering is conducted, not a category of exempt security."}, {"label": "D", "text": "A sale by an executor settling a deceased person's estate", "correct": false, "explanation": "Incorrect; sales by fiduciaries such as executors are exempt transactions, which describe the circumstances of the sale rather than the nature of the security."}]}, {"id": "q8", "unit": 9, "unitTitle": "Regulation of Investment Advisers", "difficulty": "easy", "stem": "Under the Investment Advisers Act of 1940, a person generally must register as an investment adviser if they meet all three parts of a common test (the ABC test). Which of the following is NOT one of those three parts?", "choices": [{"label": "A", "text": "The person provides advice about securities", "correct": false, "explanation": "Incorrect as the answer because giving advice about securities is the 'A' prong of the ABC test."}, {"label": "B", "text": "The person is in the business of giving such advice", "correct": false, "explanation": "Incorrect as the answer because being in the business of advising is the 'B' prong of the ABC test."}, {"label": "C", "text": "The person receives compensation for the advice", "correct": false, "explanation": "Incorrect as the answer because receiving compensation is the 'C' prong of the ABC test."}, {"label": "D", "text": "The person manages a minimum dollar amount of client assets", "correct": true, "explanation": "Correct because assets under management determine WHERE a person registers (SEC versus the states), not WHETHER the person is an investment adviser at all; the definitional test is Advice, Business, and Compensation."}]}, {"id": "q9", "unit": 10, "unitTitle": "Regulation of Investment Adviser Representatives", "difficulty": "easy", "stem": "Under the Uniform Securities Act, an investment adviser representative (IAR) is generally defined as a natural person who, working for an investment adviser, does which of the following?", "choices": [{"label": "A", "text": "Makes investment recommendations or solicits advisory clients on behalf of the firm", "correct": true, "explanation": "Correct; an IAR is an individual associated with an IA who gives advice, manages accounts, solicits clients, or supervises those who do."}, {"label": "B", "text": "Owns more than 25% of the investment adviser firm", "correct": false, "explanation": "Incorrect; ownership percentage relates to control persons, not the functional definition of an IAR, which is based on advisory job duties."}, {"label": "C", "text": "Only performs clerical or administrative tasks for the adviser", "correct": false, "explanation": "Incorrect; purely clerical or ministerial employees are specifically excluded from the IAR definition."}, {"label": "D", "text": "Is a corporation or partnership that provides advice for compensation", "correct": false, "explanation": "Incorrect; an IAR must be a natural person, while an entity providing advice for compensation is the investment adviser itself."}]}, {"id": "q10", "unit": 11, "unitTitle": "Regulation of Broker-Dealers and Their Agents", "difficulty": "medium", "stem": "A firm headquartered in Chicago has no office in Nevada. Its only contact with Nevada is effecting trades for three commercial banks and an insurance company located there. Under the Uniform Securities Act, must the firm register as a broker-dealer in Nevada?", "choices": [{"label": "A", "text": "No, because it has no place of business in Nevada and deals there only with institutional clients.", "correct": true, "explanation": "Correct; a firm with no office in a state whose only customers there are institutions (or other BDs) is excluded from the BD definition in that state and need not register."}, {"label": "B", "text": "Yes, because any firm transacting securities business with persons in a state must register there.", "correct": false, "explanation": "Incorrect; the no-place-of-business-plus-institutions exclusion specifically relieves such a firm from registering in that state."}, {"label": "C", "text": "No, but only because the firm directs fewer than six transactions into the state.", "correct": false, "explanation": "Incorrect; there is no general 'fewer than six trades' carve-out for broker-dealers; the exclusion here rests on having no office plus institutional-only contact."}, {"label": "D", "text": "Yes, because dealing with banks and insurers always makes a firm a broker-dealer in the state.", "correct": false, "explanation": "Incorrect; dealing only with institutions while having no office in the state is exactly what removes the firm from the BD definition there."}]}, {"id": "q11", "unit": 12, "unitTitle": "Remedies and Administrative Provisions", "difficulty": "easy", "stem": "Under the Uniform Securities Act, what are the maximum CRIMINAL penalties a state Administrator's enforcement can seek for a willful violation of the Act?", "choices": [{"label": "A", "text": "Up to 3 years in prison and a fine of up to $5,000", "correct": true, "explanation": "Correct; the USA sets the maximum criminal penalty at 3 years imprisonment and a $5,000 fine per willful violation."}, {"label": "B", "text": "Up to 5 years in prison and a fine of up to $10,000", "correct": false, "explanation": "Incorrect; 5 years and a $10,000 fine is the criminal penalty under the federal Securities Act of 1933, not the Uniform Securities Act state maximum of 3 years and $5,000."}, {"label": "C", "text": "Up to 1 year in prison and a fine of up to $5,000", "correct": false, "explanation": "Incorrect; the prison term is wrong, as the USA allows up to 3 years, not 1 year."}, {"label": "D", "text": "Up to 3 years in prison and a fine of up to $10,000", "correct": false, "explanation": "Incorrect; the fine figure is wrong, as the USA caps the criminal fine at $5,000, not $10,000."}]}, {"id": "q12", "unit": 13, "unitTitle": "Communications With Customers and Prospects", "difficulty": "medium", "stem": "A state-registered investment adviser occasionally buys securities for its own account and then sells them to advisory clients it has advised, acting as a principal in those trades. Under the Uniform Securities Act, before completion of each such transaction the adviser must:", "choices": [{"label": "A", "text": "Disclose its principal capacity in writing and obtain the client's consent, which may be oral or written, no later than completion of the transaction", "correct": true, "explanation": "Correct; for a principal (or agency) trade the adviser needs written disclosure of capacity plus consent (oral or written) obtained before the transaction completes (settlement)."}, {"label": "B", "text": "Simply note the principal capacity on the trade confirmation, with no consent required", "correct": false, "explanation": "Incorrect; that is the broker-dealer standard. Advisers face a higher bar because the principal trade creates a self-dealing conflict, so client consent is required."}, {"label": "C", "text": "Obtain blanket written authorization in advance covering all future principal trades", "correct": false, "explanation": "Incorrect; blanket prospective written consent applies to agency cross transactions, not to ordinary principal trades, which require consent on each transaction."}, {"label": "D", "text": "Refrain from the trade entirely, because advisers are prohibited from ever acting as principal with a client", "correct": false, "explanation": "Incorrect; the act does not prohibit principal trades, it regulates them through disclosure and consent requirements."}]}, {"id": "q13", "unit": 14, "unitTitle": "Ethical Practices and Obligations", "difficulty": "easy", "stem": "An investment adviser representative tells a prospective client, \"Hire me and I guarantee your account will earn at least 8% per year, or I'll cover the shortfall myself.\" Under the Uniform Securities Act, this statement is:", "choices": [{"label": "A", "text": "Prohibited, because an adviser may not guarantee a specific investment result against loss", "correct": true, "explanation": "Correct; guaranteeing performance or against loss is a classic prohibited practice regardless of how confident the adviser is."}, {"label": "B", "text": "Permitted, as long as the guarantee is put in writing and signed by both parties", "correct": false, "explanation": "Incorrect; putting a prohibited guarantee in writing does not cure it, it merely documents the violation."}, {"label": "C", "text": "Permitted, because the adviser is personally accepting the risk rather than passing it to the client", "correct": false, "explanation": "Incorrect; the source of the backstop is irrelevant, guaranteeing a result is barred either way."}, {"label": "D", "text": "Permitted only if the client is an accredited investor", "correct": false, "explanation": "Incorrect; accredited status has nothing to do with the ban on guaranteeing performance."}]}, {"id": "q14", "unit": 15, "unitTitle": "Tax Considerations", "difficulty": "easy", "stem": "A client sells stock she has held for eight months at a $4,000 gain. How is this gain taxed for federal income tax purposes?", "choices": [{"label": "A", "text": "As a short-term capital gain, taxed at the client's ordinary income tax rate", "correct": true, "explanation": "Correct; assets held one year or less produce short-term gains taxed at ordinary income rates."}, {"label": "B", "text": "As a long-term capital gain, taxed at the preferential 15% rate", "correct": false, "explanation": "Incorrect; long-term treatment requires a holding period of more than one year, and eight months does not qualify."}, {"label": "C", "text": "As tax-free income because the gain is under $5,000", "correct": false, "explanation": "Incorrect; there is no general exclusion for capital gains under $5,000."}, {"label": "D", "text": "As ordinary income, but only 50% of the gain is taxable", "correct": false, "explanation": "Incorrect; the entire short-term gain is taxable, with no 50% inclusion rule under U.S. law."}]}];
+const STORE_KEY = "firstsit_quiz_Series65demo_v1";
+const MASTER_LEVEL = 5;           // reaching this = retired/mastered
+const byId = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
+
+// ---- persistent state ----
+function blank(){ return { prog:{}, answered:0, correct:0 }; }
+let state = load();
+function load(){ try{ const r = JSON.parse(localStorage.getItem(STORE_KEY)); return r && r.prog ? r : blank(); }catch(e){ return blank(); } }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+function rec(id){ return state.prog[id] || (state.prog[id] = { level:0, seen:0, wrong:0 }); }
+
+// ---- selection / scheduling ----
+let lastId = null;
+function pool(){
+  const u = document.getElementById("unit").value;
+  return QUESTIONS.filter(q => u === "all" || String(q.unit) === u);
+}
+function weight(q){
+  const r = rec(q.id);
+  if (r.level >= MASTER_LEVEL) return 0.15;          // mastered: rare refresher
+  const base = [10, 6, 4, 2, 1][r.level] ?? 1;       // lower level => seen more
+  const leech = r.wrong > 0 ? r.wrong * 8 : 0;       // compounding: more misses => heavier
+  const fresh = r.seen === 0 ? 4 : 0;                // nudge brand-new questions in
+  return base + leech + fresh;
+}
+function pick(){
+  const mode = document.getElementById("mode").value;
+  let cands = pool();
+  if (mode === "leech") cands = cands.filter(q => rec(q.id).wrong > 0 && rec(q.id).level < MASTER_LEVEL);
+  if (!cands.length) return null;
+  if (mode === "sequential"){
+    let i = cands.findIndex(q => q.id === lastId);
+    return cands[(i + 1) % cands.length];
+  }
+  // weighted random, avoid immediate repeat
+  let list = cands.filter(q => q.id !== lastId); if (!list.length) list = cands;
+  let total = list.reduce((s,q) => s + weight(q), 0);
+  if (total <= 0) return list[Math.floor(seededRand() * list.length)];
+  let r = seededRand() * total;
+  for (const q of list){ r -= weight(q); if (r <= 0) return q; }
+  return list[list.length - 1];
+}
+// tiny PRNG seeded off answered count + clock so order varies but is deterministic per draw
+let _seed = (state.answered * 2654435761) >>> 0;
+function seededRand(){ _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 4294967296; }
+
+// ---- rendering ----
+function stats(){
+  const ids = Object.keys(state.prog);
+  const mastered = QUESTIONS.filter(q => (state.prog[q.id]?.level||0) >= MASTER_LEVEL).length;
+  const leeches = QUESTIONS.filter(q => (state.prog[q.id]?.wrong||0) > 0 && (state.prog[q.id]?.level||0) < MASTER_LEVEL).length;
+  document.getElementById("s-mastered").textContent = `Mastered ${mastered}/${QUESTIONS.length}`;
+  document.getElementById("s-leech").textContent = `Leech pile ${leeches}`;
+  document.getElementById("s-acc").textContent = state.answered ? `Accuracy ${Math.round(100*state.correct/state.answered)}%` : "Accuracy —";
+  document.getElementById("prog").style.width = (100*mastered/QUESTIONS.length) + "%";
+}
+function esc(s){ const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+function render(q){
+  const stage = document.getElementById("stage");
+  if (!q){ stage.innerHTML = `<div class="card empty">Nothing to show here.<br>Switch the mode or unit filter above — or you've mastered this set. 🎉</div>`; return; }
+  const r = rec(q.id);
+  const leech = r.wrong > 0 && r.level < MASTER_LEVEL;
+  stage.innerHTML = `<div class="card">
+    <div class="qmeta">
+      <span>Unit ${q.unit} · ${esc(q.unitTitle)}</span>
+      <span>${esc(q.difficulty)}</span>
+      ${leech ? `<span class="leechmark">● leech ×${r.wrong}</span>` : ``}
+      ${r.level >= MASTER_LEVEL ? `<span style="color:var(--green-d)">● mastered</span>` : ``}
+    </div>
+    <div class="stem">${esc(q.stem)}</div>
+    <div id="choices">${q.choices.map(c => `
+      <button class="choice" data-label="${c.label}">
+        <span class="cl">${c.label})</span><span>${esc(c.text)}</span><span class="mk"></span>
+      </button>`).join("")}</div>
+    <div class="feedline" id="feed"></div>
+    <div class="exps" id="exps">${q.choices.map(c => `
+      <div class="exp">${c.correct ? '<span class="ok">&#10003;</span>' : '<span class="no">&#215;</span>'} <b>${c.label}</b> — ${esc(c.explanation)}</div>`).join("")}</div>
+    <div class="next" id="next"><button class="btn">Next question →</button></div>
+  </div>`;
+  stage.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => answer(q, b.dataset.label)));
+  stage.querySelector("#next button").addEventListener("click", () => { lastId = q.id; next(); });
+}
+
+function answer(q, label){
+  const r = rec(q.id); r.seen++;
+  const correctLabel = q.choices.find(c => c.correct).label;
+  const isCorrect = label === correctLabel;
+  state.answered++;
+  if (isCorrect){ state.correct++; r.level = Math.min(MASTER_LEVEL, r.level + 1); }
+  else { r.wrong++; r.level = 0; }       // miss => back to the leech pile, resurfaces often
+  save();
+  // lock + mark choices
+  document.querySelectorAll(".choice").forEach(b => {
+    b.disabled = true;
+    const l = b.dataset.label;
+    if (l === correctLabel){ b.classList.add("correct"); b.querySelector(".mk").innerHTML = "&#10003;"; }
+    else if (l === label){ b.classList.add("wrong"); b.querySelector(".mk").innerHTML = "&#215;"; }
+  });
+  const feed = document.getElementById("feed");
+  feed.className = "feedline show " + (isCorrect ? "good" : "bad");
+  feed.textContent = isCorrect
+    ? (r.level >= MASTER_LEVEL ? "Correct — mastered. It'll only resurface occasionally now." : `Correct — promoted to level ${r.level}/${MASTER_LEVEL}.`)
+    : "Not quite — back in the leech pile. You'll see this one again soon.";
+  document.getElementById("exps").classList.add("show");
+  document.getElementById("next").classList.add("show");
+  stats();
+}
+
+function next(){ render(pick()); }
+
+// ---- unit filter options ----
+(function initUnits(){
+  const seen = new Map();
+  QUESTIONS.forEach(q => { if (!seen.has(q.unit)) seen.set(q.unit, q.unitTitle); });
+  const sel = document.getElementById("unit");
+  [...seen.keys()].sort((a,b)=>a-b).forEach(u => {
+    const o = document.createElement("option"); o.value = String(u); o.textContent = `Unit ${u} · ${seen.get(u)}`; sel.appendChild(o);
+  });
+})();
+
+document.getElementById("mode").addEventListener("change", next);
+document.getElementById("unit").addEventListener("change", next);
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Erase all saved progress on this device? This can't be undone.")){ state = blank(); save(); _seed = 1; stats(); next(); }
+});
+
+stats();
+next();
+</script>
+</body></html>

@@ -1,0 +1,227 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIE — Demo Quiz App — FirstSit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+:root{--cream:#FAF7F0;--ink:#14181F;--green:#16B364;--green-d:#0E7A46;--green-bg:#EAF7F0;--green-bd:#CDEBD9;
+--slate:#3E5C76;--terra:#C2703D;--terra-bg:#FBEFE6;--terra-bd:#E6CBB4;--muted:#5B6470;--line:#E7E0D4;--card:#fff;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.5;}
+.wrap{max-width:760px;margin:0 auto;padding:20px 18px 64px;}
+.kick{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:2px;color:#7C715A;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:27px;margin:2px 0 2px;}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--muted);}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px;}
+.stat{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green-d);background:var(--green-bg);
+border:1px solid var(--green-bd);border-radius:20px;padding:4px 12px;}
+.stat.leech{color:var(--terra);background:var(--terra-bg);border-color:var(--terra-bd);}
+.stat.muted{color:var(--muted);background:#F2EFE8;border-color:var(--line);}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 4px;}
+select,.btn{font-family:'Inter',sans-serif;font-size:13px;border:1px solid var(--line);background:var(--card);
+color:var(--ink);border-radius:9px;padding:7px 11px;cursor:pointer;}
+.btn:hover{border-color:var(--slate);}
+.btn.ghost{background:transparent;color:var(--muted);}
+.progress{height:7px;background:#ECE5D7;border-radius:6px;overflow:hidden;margin:10px 0 4px;}
+.progress > i{display:block;height:100%;background:var(--green);width:0;transition:width .3s;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;margin:14px 0;
+box-shadow:0 1px 0 rgba(20,24,31,.03);}
+.qmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7C715A;margin-bottom:7px;display:flex;gap:10px;flex-wrap:wrap;}
+.qmeta .leechmark{color:var(--terra);}
+.stem{font-size:16px;font-weight:500;margin:2px 0 14px;}
+.choice{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);
+background:var(--cream);border-radius:10px;padding:11px 13px;margin:8px 0;font-size:14px;cursor:pointer;transition:.12s;}
+.choice:hover:not(:disabled){border-color:var(--slate);background:#fff;}
+.choice:disabled{cursor:default;}
+.choice .cl{font-family:'IBM Plex Mono',monospace;color:var(--slate);font-weight:500;}
+.choice.correct{border-color:var(--green);background:var(--green-bg);}
+.choice.wrong{border-color:var(--terra);background:var(--terra-bg);}
+.choice .mk{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.choice.correct .mk{color:var(--green-d);} .choice.wrong .mk{color:var(--terra);}
+.exps{margin:10px 0 2px;display:none;}
+.exps.show{display:block;}
+.exp{font-size:13px;color:#3a4047;border-top:1px dashed var(--line);padding:8px 0 0;margin-top:8px;}
+.exp .ok{color:var(--green-d);font-family:'IBM Plex Mono',monospace;}
+.exp .no{color:#9a8e78;font-family:'IBM Plex Mono',monospace;}
+.exp b{font-family:'IBM Plex Mono',monospace;}
+.next{display:none;margin-top:14px;}
+.next.show{display:inline-block;}
+.next .btn{background:var(--ink);color:var(--cream);border-color:var(--ink);font-weight:600;padding:9px 18px;}
+.feedline{font-family:'IBM Plex Mono',monospace;font-size:12px;margin:10px 0 0;display:none;}
+.feedline.show{display:block;} .feedline.good{color:var(--green-d);} .feedline.bad{color:var(--terra);}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;}
+.foot{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#A99C84;text-align:center;margin-top:26px;line-height:1.6;}
+.disc{font-size:10px;color:#A99C84;border-top:1px solid var(--line);padding-top:10px;margin-top:18px;line-height:1.5;}
+</style></head><body><div class="wrap">
+
+<div class="kick">FirstSit</div>
+<h1>SIE — Demo Quiz App</h1>
+<div class="tag">Pass on your first sitting · 15 questions · your progress stays on this device</div>
+
+<div class="bar">
+  <span class="stat" id="s-mastered">Mastered 0/15</span>
+  <span class="stat leech" id="s-leech">Leech pile 0</span>
+  <span class="stat muted" id="s-acc">Accuracy —</span>
+</div>
+<div class="progress"><i id="prog"></i></div>
+
+<div class="controls">
+  <select id="mode" title="Question order">
+    <option value="smart">Smart (leech-weighted)</option>
+    <option value="sequential">Sequential</option>
+    <option value="leech">Drill leeches only</option>
+  </select>
+  <select id="unit" title="Filter by unit"><option value="all">All units</option></select>
+  <button class="btn ghost" id="reset" title="Erase saved progress on this device">Reset progress</button>
+</div>
+
+<noscript>
+  <div class="card" style="border-color:var(--terra);background:var(--terra-bg)">
+    <b>This quiz runs on JavaScript — and it looks like scripts are turned off here.</b><br><br>
+    If you're seeing this in a file <i>preview</i> (inside a chat, email, or cloud viewer), that preview
+    is blocking the quiz. <b>Download this file and open it in a web browser</b> — Safari, Chrome, Edge,
+    or Firefox — and the questions will appear. Everything works offline and your progress saves on your
+    own device. Nothing is uploaded.
+  </div>
+</noscript>
+
+<div id="stage"><div class="card empty">Loading questions…<br><span style="font-size:12px">If this message stays, open the file in a web browser (not a preview).</span></div></div>
+
+<div class="disc">Independent study aid. Not affiliated with, sponsored by, or endorsed by FINRA, NASAA, Kaplan, or Prometric. All questions are original. Verify current exam specifics at finra.org / nasaa.org.</div>
+<div class="foot">FirstSit · Pass on your first sitting · offline quiz app v1<br>Your answers and progress are saved only in this browser (localStorage). Nothing is uploaded.</div>
+</div>
+
+<script>
+"use strict";
+const EXAM = "SIE — Demo";
+const QUESTIONS = [{"id": "q0", "unit": 1, "unitTitle": "Equity Securities", "difficulty": "easy", "stem": "Which of the following is the most fundamental right that comes with owning common stock?", "choices": [{"label": "A", "text": "A guaranteed fixed dividend each quarter", "correct": false, "explanation": "Incorrect; common stock dividends are never guaranteed and are paid only when declared by the board of directors."}, {"label": "B", "text": "The right to vote on major corporate matters such as electing directors", "correct": true, "explanation": "Correct; voting on the board of directors and major issues is a core ownership right of common stockholders."}, {"label": "C", "text": "Priority over bondholders if the company is liquidated", "correct": false, "explanation": "Incorrect; common stockholders are last in the liquidation order, behind bondholders and preferred stockholders."}, {"label": "D", "text": "A fixed interest payment based on par value", "correct": false, "explanation": "Incorrect; interest payments are a feature of debt securities, not common stock."}]}, {"id": "q1", "unit": 2, "unitTitle": "Other Types of Equities and Corporate Actions", "difficulty": "easy", "stem": "A U.S. investor wants to own shares of a Japanese automaker but prefers to trade and receive dividends in U.S. dollars on a domestic exchange. Which security best meets this need?", "choices": [{"label": "A", "text": "An American Depositary Receipt (ADR)", "correct": true, "explanation": "Correct; an ADR is a negotiable receipt representing shares of a foreign company that trades in U.S. dollars on U.S. markets and pays dividends in dollars."}, {"label": "B", "text": "A warrant on the automaker's stock", "correct": false, "explanation": "Incorrect; a warrant is a long-term right to buy stock at a set price, not a way to directly hold ownership of a foreign company's shares."}, {"label": "C", "text": "A real estate investment trust (REIT)", "correct": false, "explanation": "Incorrect; a REIT invests in real estate and has nothing to do with owning a foreign manufacturer's equity."}, {"label": "D", "text": "A unit investment trust (UIT)", "correct": false, "explanation": "Incorrect; a UIT holds a fixed portfolio of securities and is not a vehicle for owning a single foreign company in dollars."}]}, {"id": "q2", "unit": 3, "unitTitle": "Debt Securities", "difficulty": "easy", "stem": "An investor buys a corporate bond described as trading at a discount. What does this tell you about the bond's price relative to its par value?", "choices": [{"label": "A", "text": "The bond is priced above its $1,000 par value.", "correct": false, "explanation": "A price above par is called a premium, not a discount."}, {"label": "B", "text": "The bond is priced below its $1,000 par value.", "correct": true, "explanation": "A discount bond trades for less than its par (face) value, typically because market rates have risen above the bond's coupon."}, {"label": "C", "text": "The bond is priced exactly at $1,000.", "correct": false, "explanation": "A bond trading exactly at par is said to be priced 'at par,' not at a discount."}, {"label": "D", "text": "The bond has stopped paying interest.", "correct": false, "explanation": "Trading at a discount has nothing to do with defaulting; the issuer is still expected to pay the stated coupon."}]}, {"id": "q3", "unit": 4, "unitTitle": "Investment Companies", "difficulty": "easy", "stem": "An investor wants to buy shares of a fund directly from the fund company at the next price calculated after the close of trading, and to sell those shares back to the fund itself rather than to another investor. Which type of investment company fits this description?", "choices": [{"label": "A", "text": "Open-end management company (mutual fund)", "correct": true, "explanation": "Correct; a mutual fund continuously issues redeemable shares that are bought from and sold back to the fund at the next computed NAV (forward pricing)."}, {"label": "B", "text": "Closed-end management company", "correct": false, "explanation": "Incorrect; closed-end fund shares trade between investors on an exchange at a market price, not directly with the fund at NAV."}, {"label": "C", "text": "Face-amount certificate company", "correct": false, "explanation": "Incorrect; a FAC sells a contract promising a fixed future sum, not redeemable shares priced at NAV."}, {"label": "D", "text": "Unit investment trust holding a fixed portfolio", "correct": false, "explanation": "Incorrect; while a UIT issues redeemable units, the description of continuous new-share creation and forward pricing specifically matches an open-end mutual fund."}]}, {"id": "q4", "unit": 5, "unitTitle": "Options", "difficulty": "easy", "stem": "An investor buys one call option on XYZ stock. What right does owning this call give the investor?", "choices": [{"label": "A", "text": "The right to buy 100 shares of XYZ at the strike price", "correct": true, "explanation": "Correct; a call buyer (holder) has the right to buy the underlying stock at the strike price, and one listed equity option covers 100 shares."}, {"label": "B", "text": "The right to sell 100 shares of XYZ at the strike price", "correct": false, "explanation": "Incorrect; the right to sell at the strike price belongs to a put buyer, not a call buyer."}, {"label": "C", "text": "The obligation to buy 100 shares of XYZ at the strike price", "correct": false, "explanation": "Incorrect; buyers have rights, not obligations, and the obligation to sell would belong to a call writer."}, {"label": "D", "text": "The obligation to sell 100 shares of XYZ at the strike price", "correct": false, "explanation": "Incorrect; that is the obligation of a call writer, while the call buyer holds a right, not an obligation."}]}, {"id": "q5", "unit": 6, "unitTitle": "Other Investment Types", "difficulty": "easy", "stem": "An investor wants a diversified portfolio that trades on an exchange throughout the day at market-driven prices, like a stock. Which product best fits this description?", "choices": [{"label": "A", "text": "An open-end mutual fund", "correct": false, "explanation": "Incorrect; open-end mutual fund shares do not trade intraday on an exchange — they are bought and redeemed once daily at the NAV calculated after the close."}, {"label": "B", "text": "An exchange-traded fund (ETF)", "correct": true, "explanation": "Correct; an ETF holds a diversified basket but trades on an exchange throughout the day at market prices like a stock."}, {"label": "C", "text": "A bank certificate of deposit", "correct": false, "explanation": "Incorrect; a CD is a deposit product that does not trade on an exchange and is not a diversified portfolio."}, {"label": "D", "text": "A fixed annuity", "correct": false, "explanation": "Incorrect; a fixed annuity is an insurance contract paying a guaranteed rate, not an exchange-traded diversified portfolio."}]}, {"id": "q6", "unit": 7, "unitTitle": "Issuing Securities", "difficulty": "easy", "stem": "Which federal law governs the registration of new securities offerings and the use of a prospectus?", "choices": [{"label": "A", "text": "The Securities Act of 1933", "correct": true, "explanation": "Correct; the 1933 Act is the 'new issue' or primary-market law, requiring registration and full and fair disclosure through a prospectus."}, {"label": "B", "text": "The Securities Exchange Act of 1934", "correct": false, "explanation": "Incorrect; the 1934 Act regulates the secondary market and created the SEC, not the registration of new offerings."}, {"label": "C", "text": "The Trust Indenture Act of 1939", "correct": false, "explanation": "Incorrect; that act requires an indenture and trustee for large corporate bond issues, not the registration of all new securities."}, {"label": "D", "text": "The Investment Company Act of 1940", "correct": false, "explanation": "Incorrect; that act regulates mutual funds, closed-end funds, and UITs, not the general registration process for offerings."}]}, {"id": "q7", "unit": 8, "unitTitle": "Trading Securities", "difficulty": "easy", "stem": "An investor wants to buy a stock but only if it can be purchased at $50 or less. Which type of order should be entered?", "choices": [{"label": "A", "text": "A market order", "correct": false, "explanation": "Incorrect; a market order executes immediately at the best available price with no price guarantee, so it could fill above $50."}, {"label": "B", "text": "A buy limit order at $50", "correct": true, "explanation": "Correct; a buy limit order sets a maximum price, so it executes only at $50 or lower."}, {"label": "C", "text": "A buy stop order at $50", "correct": false, "explanation": "Incorrect; a buy stop is triggered when the price rises to or above $50 and then becomes a market order, which can fill higher than $50."}, {"label": "D", "text": "A sell limit order at $50", "correct": false, "explanation": "Incorrect; a sell limit is used to sell at a minimum price, not to buy."}]}, {"id": "q8", "unit": 9, "unitTitle": "Basic Accounts", "difficulty": "easy", "stem": "A married couple opens a brokerage account as joint tenants with right of survivorship (JTWROS). One spouse dies. What happens to that spouse's interest in the account?", "choices": [{"label": "A", "text": "It passes automatically to the surviving spouse.", "correct": true, "explanation": "Correct; JTWROS means the deceased's share passes directly to the surviving tenant(s) by operation of law, bypassing probate."}, {"label": "B", "text": "It passes to the deceased spouse's estate to be distributed by will.", "correct": false, "explanation": "Incorrect; that describes tenants in common, not JTWROS, where the survivor automatically receives the interest."}, {"label": "C", "text": "The entire account is frozen until a court appoints an administrator.", "correct": false, "explanation": "Incorrect; JTWROS specifically avoids probate, so no court administrator is needed for the deceased's share to transfer."}, {"label": "D", "text": "It is split equally among the deceased's heirs.", "correct": false, "explanation": "Incorrect; in JTWROS the survivor takes the whole interest, so the deceased's other heirs receive nothing from the account."}]}, {"id": "q9", "unit": 10, "unitTitle": "Retirement Accounts", "difficulty": "easy", "stem": "What is the main tax advantage of a Traditional IRA during the years an investor is contributing and the account is growing?", "choices": [{"label": "A", "text": "Contributions may be tax-deductible and earnings grow tax-deferred.", "correct": true, "explanation": "Correct; eligible Traditional IRA contributions can be deducted now, and all growth is tax-deferred until withdrawal."}, {"label": "B", "text": "Contributions are made with after-tax dollars and all withdrawals are tax-free.", "correct": false, "explanation": "Incorrect; that describes a Roth IRA, not a Traditional IRA."}, {"label": "C", "text": "Earnings are taxed each year but contributions are never taxed.", "correct": false, "explanation": "Incorrect; Traditional IRA earnings are not taxed annually, they grow tax-deferred until distribution."}, {"label": "D", "text": "The account is completely exempt from federal income tax forever.", "correct": false, "explanation": "Incorrect; Traditional IRA withdrawals are taxed as ordinary income, so it is deferral, not exemption."}]}, {"id": "q10", "unit": 11, "unitTitle": "Account Features", "difficulty": "easy", "stem": "A married couple opens a joint brokerage account registered as JTWROS. If one spouse passes away, what happens to the assets in the account?", "choices": [{"label": "A", "text": "The deceased's share passes to their estate and goes through probate", "correct": false, "explanation": "Incorrect; that describes tenants in common (TIC), not JTWROS, where the survivor takes the assets directly."}, {"label": "B", "text": "The entire account passes automatically to the surviving spouse", "correct": true, "explanation": "Correct; with joint tenants with right of survivorship, the survivor automatically receives the deceased owner's interest, bypassing probate."}, {"label": "C", "text": "The account is frozen permanently until all heirs are identified", "correct": false, "explanation": "Incorrect; JTWROS specifically avoids this by passing ownership directly to the surviving tenant."}, {"label": "D", "text": "The assets are split equally among the surviving spouse and the deceased's children", "correct": false, "explanation": "Incorrect; survivorship passes everything to the surviving joint tenant, not to children unless they were also named owners."}]}, {"id": "q11", "unit": 12, "unitTitle": "Economics and Analysis", "difficulty": "easy", "stem": "The business cycle moves through four phases. Which sequence correctly lists them in the order they normally occur?", "choices": [{"label": "A", "text": "Expansion, peak, contraction, trough", "correct": true, "explanation": "Correct; the economy grows to a peak, then declines into a contraction that bottoms at a trough before expanding again."}, {"label": "B", "text": "Peak, expansion, trough, contraction", "correct": false, "explanation": "Incorrect; a peak follows expansion, it does not precede it, so the order is scrambled."}, {"label": "C", "text": "Trough, contraction, peak, expansion", "correct": false, "explanation": "Incorrect; contraction leads to a trough, not the other way around, and expansion comes before a peak."}, {"label": "D", "text": "Expansion, trough, contraction, peak", "correct": false, "explanation": "Incorrect; a trough is the bottom that follows a contraction, so it cannot come right after expansion."}]}, {"id": "q12", "unit": 13, "unitTitle": "Investment Returns and Investment Taxation", "difficulty": "easy", "stem": "An investor buys 200 shares of a stock that pays a $1.50 annual cash dividend. The stock currently trades at $50 per share. What is the current yield on this stock?", "choices": [{"label": "A", "text": "1.5%", "correct": false, "explanation": "Incorrect; this simply restates the dividend dollar amount as a percent and ignores the $50 price in the denominator."}, {"label": "B", "text": "3%", "correct": true, "explanation": "Correct; current yield equals annual dividend divided by current price, so $1.50 / $50 = 0.03, or 3%."}, {"label": "C", "text": "6%", "correct": false, "explanation": "Incorrect; 6% would result from using half the price ($1.50 / $25) or doubling the dividend; the correct denominator is the full $50 price."}, {"label": "D", "text": "30%", "correct": false, "explanation": "Incorrect; this misplaces the decimal, treating $1.50 / $5 instead of $1.50 / $50."}]}, {"id": "q13", "unit": 14, "unitTitle": "Making Recommendations", "difficulty": "easy", "stem": "A registered rep makes a securities recommendation to a retail customer. Under Regulation Best Interest (Reg BI), what standard must the recommendation meet?", "choices": [{"label": "A", "text": "It must be the single cheapest product available", "correct": false, "explanation": "Reg BI does not require the lowest-cost product; cost is one factor to weigh, but the best product for the customer can still cost more."}, {"label": "B", "text": "It must be in the best interest of the retail customer at the time it is made", "correct": true, "explanation": "Reg BI requires that recommendations be in the retail customer's best interest, placing the customer's interest ahead of the firm's or rep's."}, {"label": "C", "text": "It only needs to be generally acceptable, ignoring this customer's specific situation", "correct": false, "explanation": "Reg BI requires the recommendation fit this particular retail customer's best interest, not a generic one-size-fits-all standard."}, {"label": "D", "text": "It must guarantee the customer will not lose money", "correct": false, "explanation": "No recommendation can guarantee against loss; Reg BI governs the quality of the advice, not the outcome."}]}, {"id": "q14", "unit": 15, "unitTitle": "Registration and Continuing Education", "difficulty": "easy", "stem": "A broker-dealer hires a new registered representative. Which form does the firm file to register that individual with FINRA and the states?", "choices": [{"label": "A", "text": "Form U4", "correct": true, "explanation": "Correct; the Form U4 is the Uniform Application for Securities Industry Registration that a firm files to register an individual person with FINRA and the states."}, {"label": "B", "text": "Form U5", "correct": false, "explanation": "Incorrect; the Form U5 is the Uniform Termination Notice filed when a registered person leaves the firm, not when they are hired."}, {"label": "C", "text": "Form BD", "correct": false, "explanation": "Incorrect; Form BD registers the brokerage firm itself as a broker-dealer, not an individual employee."}, {"label": "D", "text": "Form ADV", "correct": false, "explanation": "Incorrect; Form ADV is the registration filing for investment advisers, not for registering a broker-dealer's representative."}]}];
+const STORE_KEY = "firstsit_quiz_SIEdemo_v1";
+const MASTER_LEVEL = 5;           // reaching this = retired/mastered
+const byId = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
+
+// ---- persistent state ----
+function blank(){ return { prog:{}, answered:0, correct:0 }; }
+let state = load();
+function load(){ try{ const r = JSON.parse(localStorage.getItem(STORE_KEY)); return r && r.prog ? r : blank(); }catch(e){ return blank(); } }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+function rec(id){ return state.prog[id] || (state.prog[id] = { level:0, seen:0, wrong:0 }); }
+
+// ---- selection / scheduling ----
+let lastId = null;
+function pool(){
+  const u = document.getElementById("unit").value;
+  return QUESTIONS.filter(q => u === "all" || String(q.unit) === u);
+}
+function weight(q){
+  const r = rec(q.id);
+  if (r.level >= MASTER_LEVEL) return 0.15;          // mastered: rare refresher
+  const base = [10, 6, 4, 2, 1][r.level] ?? 1;       // lower level => seen more
+  const leech = r.wrong > 0 ? r.wrong * 8 : 0;       // compounding: more misses => heavier
+  const fresh = r.seen === 0 ? 4 : 0;                // nudge brand-new questions in
+  return base + leech + fresh;
+}
+function pick(){
+  const mode = document.getElementById("mode").value;
+  let cands = pool();
+  if (mode === "leech") cands = cands.filter(q => rec(q.id).wrong > 0 && rec(q.id).level < MASTER_LEVEL);
+  if (!cands.length) return null;
+  if (mode === "sequential"){
+    let i = cands.findIndex(q => q.id === lastId);
+    return cands[(i + 1) % cands.length];
+  }
+  // weighted random, avoid immediate repeat
+  let list = cands.filter(q => q.id !== lastId); if (!list.length) list = cands;
+  let total = list.reduce((s,q) => s + weight(q), 0);
+  if (total <= 0) return list[Math.floor(seededRand() * list.length)];
+  let r = seededRand() * total;
+  for (const q of list){ r -= weight(q); if (r <= 0) return q; }
+  return list[list.length - 1];
+}
+// tiny PRNG seeded off answered count + clock so order varies but is deterministic per draw
+let _seed = (state.answered * 2654435761) >>> 0;
+function seededRand(){ _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 4294967296; }
+
+// ---- rendering ----
+function stats(){
+  const ids = Object.keys(state.prog);
+  const mastered = QUESTIONS.filter(q => (state.prog[q.id]?.level||0) >= MASTER_LEVEL).length;
+  const leeches = QUESTIONS.filter(q => (state.prog[q.id]?.wrong||0) > 0 && (state.prog[q.id]?.level||0) < MASTER_LEVEL).length;
+  document.getElementById("s-mastered").textContent = `Mastered ${mastered}/${QUESTIONS.length}`;
+  document.getElementById("s-leech").textContent = `Leech pile ${leeches}`;
+  document.getElementById("s-acc").textContent = state.answered ? `Accuracy ${Math.round(100*state.correct/state.answered)}%` : "Accuracy —";
+  document.getElementById("prog").style.width = (100*mastered/QUESTIONS.length) + "%";
+}
+function esc(s){ const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+function render(q){
+  const stage = document.getElementById("stage");
+  if (!q){ stage.innerHTML = `<div class="card empty">Nothing to show here.<br>Switch the mode or unit filter above — or you've mastered this set. 🎉</div>`; return; }
+  const r = rec(q.id);
+  const leech = r.wrong > 0 && r.level < MASTER_LEVEL;
+  stage.innerHTML = `<div class="card">
+    <div class="qmeta">
+      <span>Unit ${q.unit} · ${esc(q.unitTitle)}</span>
+      <span>${esc(q.difficulty)}</span>
+      ${leech ? `<span class="leechmark">● leech ×${r.wrong}</span>` : ``}
+      ${r.level >= MASTER_LEVEL ? `<span style="color:var(--green-d)">● mastered</span>` : ``}
+    </div>
+    <div class="stem">${esc(q.stem)}</div>
+    <div id="choices">${q.choices.map(c => `
+      <button class="choice" data-label="${c.label}">
+        <span class="cl">${c.label})</span><span>${esc(c.text)}</span><span class="mk"></span>
+      </button>`).join("")}</div>
+    <div class="feedline" id="feed"></div>
+    <div class="exps" id="exps">${q.choices.map(c => `
+      <div class="exp">${c.correct ? '<span class="ok">&#10003;</span>' : '<span class="no">&#215;</span>'} <b>${c.label}</b> — ${esc(c.explanation)}</div>`).join("")}</div>
+    <div class="next" id="next"><button class="btn">Next question →</button></div>
+  </div>`;
+  stage.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => answer(q, b.dataset.label)));
+  stage.querySelector("#next button").addEventListener("click", () => { lastId = q.id; next(); });
+}
+
+function answer(q, label){
+  const r = rec(q.id); r.seen++;
+  const correctLabel = q.choices.find(c => c.correct).label;
+  const isCorrect = label === correctLabel;
+  state.answered++;
+  if (isCorrect){ state.correct++; r.level = Math.min(MASTER_LEVEL, r.level + 1); }
+  else { r.wrong++; r.level = 0; }       // miss => back to the leech pile, resurfaces often
+  save();
+  // lock + mark choices
+  document.querySelectorAll(".choice").forEach(b => {
+    b.disabled = true;
+    const l = b.dataset.label;
+    if (l === correctLabel){ b.classList.add("correct"); b.querySelector(".mk").innerHTML = "&#10003;"; }
+    else if (l === label){ b.classList.add("wrong"); b.querySelector(".mk").innerHTML = "&#215;"; }
+  });
+  const feed = document.getElementById("feed");
+  feed.className = "feedline show " + (isCorrect ? "good" : "bad");
+  feed.textContent = isCorrect
+    ? (r.level >= MASTER_LEVEL ? "Correct — mastered. It'll only resurface occasionally now." : `Correct — promoted to level ${r.level}/${MASTER_LEVEL}.`)
+    : "Not quite — back in the leech pile. You'll see this one again soon.";
+  document.getElementById("exps").classList.add("show");
+  document.getElementById("next").classList.add("show");
+  stats();
+}
+
+function next(){ render(pick()); }
+
+// ---- unit filter options ----
+(function initUnits(){
+  const seen = new Map();
+  QUESTIONS.forEach(q => { if (!seen.has(q.unit)) seen.set(q.unit, q.unitTitle); });
+  const sel = document.getElementById("unit");
+  [...seen.keys()].sort((a,b)=>a-b).forEach(u => {
+    const o = document.createElement("option"); o.value = String(u); o.textContent = `Unit ${u} · ${seen.get(u)}`; sel.appendChild(o);
+  });
+})();
+
+document.getElementById("mode").addEventListener("change", next);
+document.getElementById("unit").addEventListener("change", next);
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Erase all saved progress on this device? This can't be undone.")){ state = blank(); save(); _seed = 1; stats(); next(); }
+});
+
+stats();
+next();
+</script>
+</body></html>

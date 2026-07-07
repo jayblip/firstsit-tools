@@ -1,0 +1,227 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Series 6 — Demo Quiz App — FirstSit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+:root{--cream:#FAF7F0;--ink:#14181F;--green:#16B364;--green-d:#0E7A46;--green-bg:#EAF7F0;--green-bd:#CDEBD9;
+--slate:#3E5C76;--terra:#C2703D;--terra-bg:#FBEFE6;--terra-bd:#E6CBB4;--muted:#5B6470;--line:#E7E0D4;--card:#fff;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.5;}
+.wrap{max-width:760px;margin:0 auto;padding:20px 18px 64px;}
+.kick{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:2px;color:#7C715A;}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:27px;margin:2px 0 2px;}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--muted);}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px;}
+.stat{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green-d);background:var(--green-bg);
+border:1px solid var(--green-bd);border-radius:20px;padding:4px 12px;}
+.stat.leech{color:var(--terra);background:var(--terra-bg);border-color:var(--terra-bd);}
+.stat.muted{color:var(--muted);background:#F2EFE8;border-color:var(--line);}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 4px;}
+select,.btn{font-family:'Inter',sans-serif;font-size:13px;border:1px solid var(--line);background:var(--card);
+color:var(--ink);border-radius:9px;padding:7px 11px;cursor:pointer;}
+.btn:hover{border-color:var(--slate);}
+.btn.ghost{background:transparent;color:var(--muted);}
+.progress{height:7px;background:#ECE5D7;border-radius:6px;overflow:hidden;margin:10px 0 4px;}
+.progress > i{display:block;height:100%;background:var(--green);width:0;transition:width .3s;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;margin:14px 0;
+box-shadow:0 1px 0 rgba(20,24,31,.03);}
+.qmeta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7C715A;margin-bottom:7px;display:flex;gap:10px;flex-wrap:wrap;}
+.qmeta .leechmark{color:var(--terra);}
+.stem{font-size:16px;font-weight:500;margin:2px 0 14px;}
+.choice{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);
+background:var(--cream);border-radius:10px;padding:11px 13px;margin:8px 0;font-size:14px;cursor:pointer;transition:.12s;}
+.choice:hover:not(:disabled){border-color:var(--slate);background:#fff;}
+.choice:disabled{cursor:default;}
+.choice .cl{font-family:'IBM Plex Mono',monospace;color:var(--slate);font-weight:500;}
+.choice.correct{border-color:var(--green);background:var(--green-bg);}
+.choice.wrong{border-color:var(--terra);background:var(--terra-bg);}
+.choice .mk{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.choice.correct .mk{color:var(--green-d);} .choice.wrong .mk{color:var(--terra);}
+.exps{margin:10px 0 2px;display:none;}
+.exps.show{display:block;}
+.exp{font-size:13px;color:#3a4047;border-top:1px dashed var(--line);padding:8px 0 0;margin-top:8px;}
+.exp .ok{color:var(--green-d);font-family:'IBM Plex Mono',monospace;}
+.exp .no{color:#9a8e78;font-family:'IBM Plex Mono',monospace;}
+.exp b{font-family:'IBM Plex Mono',monospace;}
+.next{display:none;margin-top:14px;}
+.next.show{display:inline-block;}
+.next .btn{background:var(--ink);color:var(--cream);border-color:var(--ink);font-weight:600;padding:9px 18px;}
+.feedline{font-family:'IBM Plex Mono',monospace;font-size:12px;margin:10px 0 0;display:none;}
+.feedline.show{display:block;} .feedline.good{color:var(--green-d);} .feedline.bad{color:var(--terra);}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;}
+.foot{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#A99C84;text-align:center;margin-top:26px;line-height:1.6;}
+.disc{font-size:10px;color:#A99C84;border-top:1px solid var(--line);padding-top:10px;margin-top:18px;line-height:1.5;}
+</style></head><body><div class="wrap">
+
+<div class="kick">FirstSit</div>
+<h1>Series 6 — Demo Quiz App</h1>
+<div class="tag">Pass on your first sitting · 15 questions · your progress stays on this device</div>
+
+<div class="bar">
+  <span class="stat" id="s-mastered">Mastered 0/15</span>
+  <span class="stat leech" id="s-leech">Leech pile 0</span>
+  <span class="stat muted" id="s-acc">Accuracy —</span>
+</div>
+<div class="progress"><i id="prog"></i></div>
+
+<div class="controls">
+  <select id="mode" title="Question order">
+    <option value="smart">Smart (leech-weighted)</option>
+    <option value="sequential">Sequential</option>
+    <option value="leech">Drill leeches only</option>
+  </select>
+  <select id="unit" title="Filter by unit"><option value="all">All units</option></select>
+  <button class="btn ghost" id="reset" title="Erase saved progress on this device">Reset progress</button>
+</div>
+
+<noscript>
+  <div class="card" style="border-color:var(--terra);background:var(--terra-bg)">
+    <b>This quiz runs on JavaScript — and it looks like scripts are turned off here.</b><br><br>
+    If you're seeing this in a file <i>preview</i> (inside a chat, email, or cloud viewer), that preview
+    is blocking the quiz. <b>Download this file and open it in a web browser</b> — Safari, Chrome, Edge,
+    or Firefox — and the questions will appear. Everything works offline and your progress saves on your
+    own device. Nothing is uploaded.
+  </div>
+</noscript>
+
+<div id="stage"><div class="card empty">Loading questions…<br><span style="font-size:12px">If this message stays, open the file in a web browser (not a preview).</span></div></div>
+
+<div class="disc">Independent study aid. Not affiliated with, sponsored by, or endorsed by FINRA, NASAA, Kaplan, or Prometric. All questions are original. Verify current exam specifics at finra.org / nasaa.org.</div>
+<div class="foot">FirstSit · Pass on your first sitting · offline quiz app v1<br>Your answers and progress are saved only in this browser (localStorage). Nothing is uploaded.</div>
+</div>
+
+<script>
+"use strict";
+const EXAM = "Series 6 — Demo";
+const QUESTIONS = [{"id": "q0", "unit": 1, "unitTitle": "Securities and Markets", "difficulty": "easy", "stem": "An investor wants the security that gives them an ownership stake in a corporation and the right to vote on major corporate matters such as electing the board of directors. Which security best fits this description?", "choices": [{"label": "A", "text": "Common stock", "correct": true, "explanation": "Common stock represents ownership (equity) and carries voting rights on matters like electing directors, so it fits perfectly."}, {"label": "B", "text": "Preferred stock", "correct": false, "explanation": "Preferred stock is an equity security but generally carries no voting rights, so it does not match the requirement to vote."}, {"label": "C", "text": "A corporate bond", "correct": false, "explanation": "A bond is a debt instrument representing a loan to the issuer, not ownership, and bondholders do not vote."}, {"label": "D", "text": "A Treasury note", "correct": false, "explanation": "A Treasury note is government debt, giving the holder a creditor claim with no ownership or voting rights."}]}, {"id": "q1", "unit": 1, "unitTitle": "Securities and Markets", "difficulty": "medium", "stem": "Which statement most accurately describes the priority of claims if a corporation is liquidated?", "choices": [{"label": "A", "text": "Common stockholders are paid before preferred stockholders", "correct": false, "explanation": "This reverses the order; common stockholders have the most junior claim and are paid last."}, {"label": "B", "text": "Secured creditors are paid before preferred stockholders, who are paid before common stockholders", "correct": true, "explanation": "The liquidation priority runs secured creditors, then general (unsecured) creditors, then preferred stock, then common stock, so this ordering is correct."}, {"label": "C", "text": "Preferred stockholders are paid before secured bondholders", "correct": false, "explanation": "All debt holders, including secured bondholders, are paid before any equity holders, so preferred stock cannot come first."}, {"label": "D", "text": "All equity holders are paid before any debt holders", "correct": false, "explanation": "Debt (creditor) claims always rank ahead of equity claims in a liquidation."}]}, {"id": "q2", "unit": 1, "unitTitle": "Securities and Markets", "difficulty": "medium", "stem": "A customer owns cumulative preferred stock. The issuer skipped the last two annual dividends. Before the company may pay any dividend to common stockholders, it must first pay:", "choices": [{"label": "A", "text": "Only the current year's preferred dividend", "correct": false, "explanation": "With cumulative preferred, missed (in arrears) dividends accumulate and must also be paid, not just the current one."}, {"label": "B", "text": "Both the skipped dividends in arrears and the current preferred dividend", "correct": true, "explanation": "Cumulative preferred requires all dividends in arrears plus the current preferred dividend to be paid before any common dividend, which is the defining feature."}, {"label": "C", "text": "Nothing, because skipped preferred dividends are permanently forfeited", "correct": false, "explanation": "That describes straight (noncumulative) preferred; cumulative preferred specifically does not forfeit skipped dividends."}, {"label": "D", "text": "A penalty equal to twice the missed dividends", "correct": false, "explanation": "There is no doubling penalty; the issuer simply owes the accumulated arrears plus the current dividend."}]}, {"id": "q3", "unit": 2, "unitTitle": "Investment Companies and Investment Taxation", "difficulty": "easy", "stem": "Under the Investment Company Act of 1940, which of the following is NOT one of the three classifications of investment company?", "choices": [{"label": "A", "text": "Face-amount certificate company", "correct": false, "explanation": "Wrong choice to pick as the answer - the face-amount certificate company IS one of the three '40 Act classifications, so it does not belong in a 'NOT' list."}, {"label": "B", "text": "Unit investment trust", "correct": false, "explanation": "The UIT IS a recognized '40 Act classification, so it is not the exception the question asks for."}, {"label": "C", "text": "Management company", "correct": false, "explanation": "The management company (open-end and closed-end funds live here) IS one of the three classifications, so it is not the answer."}, {"label": "D", "text": "Real estate investment trust", "correct": true, "explanation": "Correct - a REIT is a real estate company, not an investment company under the '40 Act; the three classifications are face-amount certificate companies, UITs, and management companies."}]}, {"id": "q4", "unit": 2, "unitTitle": "Investment Companies and Investment Taxation", "difficulty": "easy", "stem": "An investor wants to buy shares of a fund that continuously issues new shares and redeems them at net asset value. Which type of investment company is this?", "choices": [{"label": "A", "text": "Open-end management company", "correct": true, "explanation": "Correct - an open-end fund (mutual fund) continuously issues new shares and redeems them based on NAV, exactly as described."}, {"label": "B", "text": "Closed-end management company", "correct": false, "explanation": "Wrong - a closed-end fund issues a fixed number of shares in an IPO and then trades on an exchange at a market price, not continuously at NAV."}, {"label": "C", "text": "Unit investment trust", "correct": false, "explanation": "Wrong - a UIT issues redeemable units of a fixed portfolio, but it does not continuously issue new shares the way an open-end fund does."}, {"label": "D", "text": "Face-amount certificate company", "correct": false, "explanation": "Wrong - a face-amount certificate company sells debt-like certificates promising a future fixed amount, not redeemable equity shares priced at NAV."}]}, {"id": "q5", "unit": 2, "unitTitle": "Investment Companies and Investment Taxation", "difficulty": "easy", "stem": "A mutual fund's net asset value per share is calculated as:", "choices": [{"label": "A", "text": "Total assets minus total liabilities, divided by the number of shares outstanding", "correct": true, "explanation": "Correct - NAV per share equals net assets (assets minus liabilities) divided by shares outstanding, computed at least once each business day."}, {"label": "B", "text": "Total assets divided by the number of shares outstanding", "correct": false, "explanation": "Wrong - this ignores liabilities; NAV uses NET assets, so liabilities must be subtracted first."}, {"label": "C", "text": "The total dollars investors paid in, divided by the number of shares outstanding", "correct": false, "explanation": "Wrong - NAV is recalculated each day from the current market value of the portfolio's net assets, not from the historical amount investors originally contributed."}, {"label": "D", "text": "The current market price set by supply and demand on the exchange", "correct": false, "explanation": "Wrong - that describes a closed-end fund's market price; an open-end fund's NAV is computed from the portfolio, not by trading."}]}, {"id": "q6", "unit": 3, "unitTitle": "Customer Accounts", "difficulty": "easy", "stem": "A married couple wants to open a brokerage account together so that, if one spouse dies, the deceased spouse's interest automatically passes to the survivor outside of probate. Which account registration best meets this goal?", "choices": [{"label": "A", "text": "Tenants in common (TIC)", "correct": false, "explanation": "Wrong — in a TIC account a deceased owner's fractional share passes to that owner's estate, not automatically to the survivor."}, {"label": "B", "text": "Joint tenants with rights of survivorship (JTWROS)", "correct": true, "explanation": "Correct — JTWROS stipulates that a deceased tenant's interest passes directly to the surviving tenant(s), avoiding probate on that interest."}, {"label": "C", "text": "Two separate individual accounts", "correct": false, "explanation": "Wrong — separate individual accounts are not jointly owned, so there is no survivorship feature between the spouses."}, {"label": "D", "text": "An UTMA custodial account", "correct": false, "explanation": "Wrong — a custodial account is for a single minor beneficiary, not for two competent adult spouses seeking survivorship."}]}, {"id": "q7", "unit": 3, "unitTitle": "Customer Accounts", "difficulty": "medium", "stem": "Which statement about a transfer on death (TOD) designation on a customer's account is correct?", "choices": [{"label": "A", "text": "A TOD designation removes the account assets from the owner's taxable estate", "correct": false, "explanation": "Wrong — a TOD avoids probate but the assets remain part of the owner's estate for estate-tax purposes."}, {"label": "B", "text": "A TOD beneficiary has the right to direct trades in the account during the owner's lifetime", "correct": false, "explanation": "Wrong — a TOD beneficiary has no rights at all while the owner is alive; the designation only takes effect at the owner's death and can be changed any time before then."}, {"label": "C", "text": "A TOD avoids probate but the assets are still part of the owner's estate for estate-tax purposes", "correct": true, "explanation": "Correct — a TOD directs how assets pass at death and bypasses probate, yet the assets remain in the owner's estate for estate-tax calculation."}, {"label": "D", "text": "On a joint account, only one owner needs to sign to add a TOD", "correct": false, "explanation": "Wrong — on a joint account all tenants must agree to and sign the TOD; it becomes effective only after the last surviving tenant dies."}]}, {"id": "q8", "unit": 3, "unitTitle": "Customer Accounts", "difficulty": "hard", "stem": "A legally married couple lives in a state that recognizes tenancy by the entirety. They want a joint account that includes a survivorship feature but ALSO requires the consent of both spouses before either can sell or pledge (encumber) the securities. Which registration fits?", "choices": [{"label": "A", "text": "Tenants by the entirety (TBE)", "correct": true, "explanation": "Correct — TBE is for legally married couples and, unlike standard JTWROS, requires both owners to agree before any property held this way can be sold or encumbered, while still passing to the survivor at death."}, {"label": "B", "text": "Tenants in common (TIC)", "correct": false, "explanation": "Wrong — TIC allows unequal, separately transferable interests, has no survivorship, and does not require joint consent to sell or pledge."}, {"label": "C", "text": "Standard JTWROS with no further restriction", "correct": false, "explanation": "Wrong — ordinary JTWROS lets any tenant transact and does not require both spouses' consent to encumber the assets."}, {"label": "D", "text": "A community property account", "correct": false, "explanation": "Wrong — community property gives each spouse a one-half interest but does not impose TBE's both-must-consent restriction on selling or pledging, and it exists only in community-property states."}]}, {"id": "q9", "unit": 4, "unitTitle": "Investment Recommendations", "difficulty": "easy", "stem": "A representative is gathering information about a new client. Which of the following is a NONFINANCIAL consideration?", "choices": [{"label": "A", "text": "The client's gross annual salary", "correct": false, "explanation": "Salary is a dollar amount that appears on an income statement, making it a financial consideration."}, {"label": "B", "text": "The client's tolerance for risk", "correct": true, "explanation": "Risk tolerance cannot be expressed as a sum of money, so it is a nonfinancial consideration and often weighs more heavily than the financial facts."}, {"label": "C", "text": "The outstanding balance on the client's mortgage", "correct": false, "explanation": "A mortgage balance is a liability with a specific dollar figure, so it is a financial consideration found on the client's balance sheet."}, {"label": "D", "text": "The current cash value of the client's life insurance", "correct": false, "explanation": "Cash value is a definable dollar amount, which makes it a financial, not a nonfinancial, consideration."}]}, {"id": "q10", "unit": 4, "unitTitle": "Investment Recommendations", "difficulty": "easy", "stem": "An investor holds a single, well-diversified equity mutual fund. The broad stock market falls 12% on a poor national economic report, and the fund declines nearly as much. Which risk did this investor primarily experience?", "choices": [{"label": "A", "text": "Business risk", "correct": false, "explanation": "Business risk affects an individual company or industry and can be diversified away; it would not cause a broadly diversified fund to fall with the whole market."}, {"label": "B", "text": "Market (systematic) risk", "correct": true, "explanation": "Market risk affects the entire market and cannot be diversified away, so even a diversified fund declines when the overall market drops."}, {"label": "C", "text": "Credit risk", "correct": false, "explanation": "Credit (default) risk applies to debt securities and an issuer's failure to pay, not to a broad equity market decline."}, {"label": "D", "text": "Liquidity risk", "correct": false, "explanation": "Liquidity risk is the inability to sell quickly at fair value; the loss here came from a price decline, not an inability to sell."}]}, {"id": "q11", "unit": 4, "unitTitle": "Investment Recommendations", "difficulty": "easy", "stem": "A stock has a beta of 1.4. If the broad market index declines 10%, the stock would be expected to:", "choices": [{"label": "A", "text": "decline approximately 14%", "correct": true, "explanation": "A beta of 1.4 means the stock is 40% more volatile than the market, so a 10% market drop implies roughly a 14% decline."}, {"label": "B", "text": "decline approximately 7%", "correct": false, "explanation": "A 7% move would correspond to a beta of about 0.7, indicating less volatility than the market, not more."}, {"label": "C", "text": "decline approximately 10%", "correct": false, "explanation": "A 10% move matching the market corresponds to a beta of 1.0, not 1.4."}, {"label": "D", "text": "rise approximately 14%", "correct": false, "explanation": "Beta measures the magnitude of movement in the same direction as the market; a market decline produces a decline, not a gain."}]}, {"id": "q12", "unit": 5, "unitTitle": "Regulatory Issues", "difficulty": "easy", "stem": "Carla, a registered representative, prepares a single sales brochure and emails it to 40 of her retail prospects over a two-week span. Under FINRA rules, how is this communication classified?", "choices": [{"label": "A", "text": "Correspondence, because it was sent by email", "correct": false, "explanation": "Wrong because correspondence is capped at 25 or fewer retail recipients in a 30-day period; the delivery method (email) does not by itself make something correspondence."}, {"label": "B", "text": "Retail communication, because it reached more than 25 retail investors within 30 days", "correct": true, "explanation": "Correct because any written piece distributed to more than 25 retail investors within any 30-calendar-day period is retail communication, regardless of format."}, {"label": "C", "text": "Institutional communication, because it was distributed in bulk", "correct": false, "explanation": "Wrong because institutional communication goes only to institutional investors (banks, registered advisers, entities with at least $50 million in assets), not retail prospects."}, {"label": "D", "text": "A public appearance, because she initiated the contact", "correct": false, "explanation": "Wrong because a public appearance is participation in a seminar, interview, or speaking event, not the distribution of written marketing material."}]}, {"id": "q13", "unit": 5, "unitTitle": "Regulatory Issues", "difficulty": "medium", "stem": "A firm distributes a written research summary only to insurance companies and SEC-registered investment advisers, and it has no reason to believe any of it will be forwarded to retail investors. Which approval standard applies before the firm may use this institutional communication?", "choices": [{"label": "A", "text": "Prior principal approval of every piece is always required before first use", "correct": false, "explanation": "Wrong because institutional communications do not mandate prior principal approval; that strict pre-use rule applies to retail communication."}, {"label": "B", "text": "The firm may choose between requiring prior principal approval or relying on post-use review backed by documented training of associated persons", "correct": true, "explanation": "Correct because for institutional communication a firm decides whether to require pre-approval or use post-use review, but if it skips pre-approval it must document training and education of its associated persons."}, {"label": "C", "text": "The communication must be filed with FINRA at least 10 business days before first use", "correct": false, "explanation": "Wrong because institutional communications are exempt from FINRA filing; that prefiling requirement attaches to certain retail communications."}, {"label": "D", "text": "No supervision of any kind is required for institutional audiences", "correct": false, "explanation": "Wrong because supervision is still required; the firm must either pre-approve or conduct post-use review with documented training."}]}, {"id": "q14", "unit": 5, "unitTitle": "Regulatory Issues", "difficulty": "easy", "stem": "A customer phones his registered representative and angrily says he was put into an unsuitable variable annuity. Under FINRA rules, what is the regulatory status of this complaint?", "choices": [{"label": "A", "text": "An oral complaint has no formal regulatory standing, though the firm may handle it under its own internal procedures", "correct": true, "explanation": "Correct because only written complaints have regulatory standing under FINRA rules; oral complaints are managed by varying internal firm procedures."}, {"label": "B", "text": "It must be logged in the firm's quarterly written-complaint report to FINRA", "correct": false, "explanation": "Wrong because the quarterly statistical report to FINRA covers written complaints, and an oral complaint does not trigger that filing."}, {"label": "C", "text": "It must be retained in the firm's complaint file for four years after resolution", "correct": false, "explanation": "Wrong because the four-year retention requirement applies to written complaints; an oral complaint carries no such regulatory recordkeeping mandate."}, {"label": "D", "text": "It automatically proceeds to FINRA arbitration", "correct": false, "explanation": "Wrong because nothing proceeds automatically to arbitration, and an oral complaint has no regulatory standing to begin with."}]}];
+const STORE_KEY = "firstsit_quiz_Series6demo_v1";
+const MASTER_LEVEL = 5;           // reaching this = retired/mastered
+const byId = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
+
+// ---- persistent state ----
+function blank(){ return { prog:{}, answered:0, correct:0 }; }
+let state = load();
+function load(){ try{ const r = JSON.parse(localStorage.getItem(STORE_KEY)); return r && r.prog ? r : blank(); }catch(e){ return blank(); } }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+function rec(id){ return state.prog[id] || (state.prog[id] = { level:0, seen:0, wrong:0 }); }
+
+// ---- selection / scheduling ----
+let lastId = null;
+function pool(){
+  const u = document.getElementById("unit").value;
+  return QUESTIONS.filter(q => u === "all" || String(q.unit) === u);
+}
+function weight(q){
+  const r = rec(q.id);
+  if (r.level >= MASTER_LEVEL) return 0.15;          // mastered: rare refresher
+  const base = [10, 6, 4, 2, 1][r.level] ?? 1;       // lower level => seen more
+  const leech = r.wrong > 0 ? r.wrong * 8 : 0;       // compounding: more misses => heavier
+  const fresh = r.seen === 0 ? 4 : 0;                // nudge brand-new questions in
+  return base + leech + fresh;
+}
+function pick(){
+  const mode = document.getElementById("mode").value;
+  let cands = pool();
+  if (mode === "leech") cands = cands.filter(q => rec(q.id).wrong > 0 && rec(q.id).level < MASTER_LEVEL);
+  if (!cands.length) return null;
+  if (mode === "sequential"){
+    let i = cands.findIndex(q => q.id === lastId);
+    return cands[(i + 1) % cands.length];
+  }
+  // weighted random, avoid immediate repeat
+  let list = cands.filter(q => q.id !== lastId); if (!list.length) list = cands;
+  let total = list.reduce((s,q) => s + weight(q), 0);
+  if (total <= 0) return list[Math.floor(seededRand() * list.length)];
+  let r = seededRand() * total;
+  for (const q of list){ r -= weight(q); if (r <= 0) return q; }
+  return list[list.length - 1];
+}
+// tiny PRNG seeded off answered count + clock so order varies but is deterministic per draw
+let _seed = (state.answered * 2654435761) >>> 0;
+function seededRand(){ _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 4294967296; }
+
+// ---- rendering ----
+function stats(){
+  const ids = Object.keys(state.prog);
+  const mastered = QUESTIONS.filter(q => (state.prog[q.id]?.level||0) >= MASTER_LEVEL).length;
+  const leeches = QUESTIONS.filter(q => (state.prog[q.id]?.wrong||0) > 0 && (state.prog[q.id]?.level||0) < MASTER_LEVEL).length;
+  document.getElementById("s-mastered").textContent = `Mastered ${mastered}/${QUESTIONS.length}`;
+  document.getElementById("s-leech").textContent = `Leech pile ${leeches}`;
+  document.getElementById("s-acc").textContent = state.answered ? `Accuracy ${Math.round(100*state.correct/state.answered)}%` : "Accuracy —";
+  document.getElementById("prog").style.width = (100*mastered/QUESTIONS.length) + "%";
+}
+function esc(s){ const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+function render(q){
+  const stage = document.getElementById("stage");
+  if (!q){ stage.innerHTML = `<div class="card empty">Nothing to show here.<br>Switch the mode or unit filter above — or you've mastered this set. 🎉</div>`; return; }
+  const r = rec(q.id);
+  const leech = r.wrong > 0 && r.level < MASTER_LEVEL;
+  stage.innerHTML = `<div class="card">
+    <div class="qmeta">
+      <span>Unit ${q.unit} · ${esc(q.unitTitle)}</span>
+      <span>${esc(q.difficulty)}</span>
+      ${leech ? `<span class="leechmark">● leech ×${r.wrong}</span>` : ``}
+      ${r.level >= MASTER_LEVEL ? `<span style="color:var(--green-d)">● mastered</span>` : ``}
+    </div>
+    <div class="stem">${esc(q.stem)}</div>
+    <div id="choices">${q.choices.map(c => `
+      <button class="choice" data-label="${c.label}">
+        <span class="cl">${c.label})</span><span>${esc(c.text)}</span><span class="mk"></span>
+      </button>`).join("")}</div>
+    <div class="feedline" id="feed"></div>
+    <div class="exps" id="exps">${q.choices.map(c => `
+      <div class="exp">${c.correct ? '<span class="ok">&#10003;</span>' : '<span class="no">&#215;</span>'} <b>${c.label}</b> — ${esc(c.explanation)}</div>`).join("")}</div>
+    <div class="next" id="next"><button class="btn">Next question →</button></div>
+  </div>`;
+  stage.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => answer(q, b.dataset.label)));
+  stage.querySelector("#next button").addEventListener("click", () => { lastId = q.id; next(); });
+}
+
+function answer(q, label){
+  const r = rec(q.id); r.seen++;
+  const correctLabel = q.choices.find(c => c.correct).label;
+  const isCorrect = label === correctLabel;
+  state.answered++;
+  if (isCorrect){ state.correct++; r.level = Math.min(MASTER_LEVEL, r.level + 1); }
+  else { r.wrong++; r.level = 0; }       // miss => back to the leech pile, resurfaces often
+  save();
+  // lock + mark choices
+  document.querySelectorAll(".choice").forEach(b => {
+    b.disabled = true;
+    const l = b.dataset.label;
+    if (l === correctLabel){ b.classList.add("correct"); b.querySelector(".mk").innerHTML = "&#10003;"; }
+    else if (l === label){ b.classList.add("wrong"); b.querySelector(".mk").innerHTML = "&#215;"; }
+  });
+  const feed = document.getElementById("feed");
+  feed.className = "feedline show " + (isCorrect ? "good" : "bad");
+  feed.textContent = isCorrect
+    ? (r.level >= MASTER_LEVEL ? "Correct — mastered. It'll only resurface occasionally now." : `Correct — promoted to level ${r.level}/${MASTER_LEVEL}.`)
+    : "Not quite — back in the leech pile. You'll see this one again soon.";
+  document.getElementById("exps").classList.add("show");
+  document.getElementById("next").classList.add("show");
+  stats();
+}
+
+function next(){ render(pick()); }
+
+// ---- unit filter options ----
+(function initUnits(){
+  const seen = new Map();
+  QUESTIONS.forEach(q => { if (!seen.has(q.unit)) seen.set(q.unit, q.unitTitle); });
+  const sel = document.getElementById("unit");
+  [...seen.keys()].sort((a,b)=>a-b).forEach(u => {
+    const o = document.createElement("option"); o.value = String(u); o.textContent = `Unit ${u} · ${seen.get(u)}`; sel.appendChild(o);
+  });
+})();
+
+document.getElementById("mode").addEventListener("change", next);
+document.getElementById("unit").addEventListener("change", next);
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Erase all saved progress on this device? This can't be undone.")){ state = blank(); save(); _seed = 1; stats(); next(); }
+});
+
+stats();
+next();
+</script>
+</body></html>
