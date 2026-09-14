@@ -42,12 +42,19 @@ iframe.quiz{width:100%;height:760px;border:1.5px solid var(--line);border-radius
 footer{border-top:1.5px solid var(--line);padding:26px 20px;font-size:13.5px;color:var(--mut)}
 footer a{color:var(--mut)}
 .crumb{font-size:13.5px;color:var(--mut);margin-bottom:14px}.crumb a{color:var(--mut)}
+.qcard{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.qcard .stem{font-weight:600;margin-bottom:10px}
+.qcard .ch{font-size:15px;margin:5px 0;padding:4px 0}
+.qcard .ch b{font-family:ui-monospace,monospace;margin-right:6px}
+.qcard .ch.right{color:var(--green-dk)}
+.qcard .exp{font-size:14px;color:var(--mut);margin:3px 0 3px 22px}
+.qcard .unit{font-size:12.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
 </style><script async src="https://www.googletagmanager.com/gtag/js?id=G-JV5FJDL4ML"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
 gtag('js',new Date());gtag('config','G-JV5FJDL4ML');gtag('config','AW-18447778132');
 document.addEventListener('click',function(e){
   var a=e.target.closest('a[href*="firstsit.etsy.com"]');
-  if(a){gtag('event','etsy_cta_click',{link_url:a.href,page_path:location.pathname});}
+  if(a){gtag('event','etsy_cta_click',{link_url:a.href,page_path:location.pathname});gtag('event','conversion',{send_to:'AW-18447778132/rDL2CPPK8fccENSCy9xE'});}
 });
 </script></head><body>
 <header><div class="in"><a class="logo" href="https://passfirstsit.com/">First<span>Sit</span> <small style="font-weight:400;font-size:13px;opacity:.8">free exam tools</small></a><nav><a href="https://passfirstsit.com/">Exams</a><a href="https://passfirstsit.com/about/">About</a><a href="https://firstsit.gumroad.com" rel="noopener">Free sample</a></nav></div></header>
@@ -68,7 +75,7 @@ repeating the same mistake on test day.</p>
 <a class="cta ghost" href="https://passfirstsit.com/sie/free-practice-quiz/">Try the free SIE quiz first →</a>
 <h2>SIE at a glance</h2>
 <table>
-<tr><th>Questions</th><td>75 scored, 10 unscored pretest</td></tr>
+<tr><th>Questions</th><td>75 scored, 5 unscored pretest</td></tr>
 <tr><th>Passing score</th><td>70% (~53 correct)</td></tr>
 <tr><th>You can miss</th><td>~22 scored questions</td></tr>
 <tr><th>Fee</th><td>$100</td></tr>
